@@ -118,6 +118,12 @@ str_ram:
 
 
 .macro testRamPattern args pattern
+  ld a,'*'  
+  printChar
+  ld a,pattern
+  printByte
+  ld a,'*'  
+  printChar  
 .repeat 16 index i
   ld hl,+
   exx
@@ -132,8 +138,6 @@ str_ram:
   jp patCheckCore  
 +:
 .endr
-  ld a,'|'
-  printChar
 .endm
 
   

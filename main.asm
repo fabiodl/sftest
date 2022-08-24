@@ -46,38 +46,36 @@ Checksum: ;It sums bc bytes from offset hl into de
 .endm
 
 
-.macro patFill16K
-  ld hl,$4000
+
 patFillCore:  
-  xor a
+  ld a,c
   add hl,de
   ex de,hl  
 -:ld (hl),a    
-  cp c
+  cp $00
   jp nz,+
-  ld a,$FF
-+:inc a
+  ld a,c
++:dec a
   inc hl
   ld b,a;backup
   ld a,d
   cp h
   ld a,b
   jp nz,-  
-.endm
+  exx
+  jp (hl)
+    
   
-
-.macro patCheck16K
-  ld hl,$4000
 patCheckCore:  
-  xor a
+  ld a,c
   add hl,de
   ex de,hl  
 -:cp (hl)  
   jp nz,patcheckfail
-  cp c
+  cp $00
   jp nz,+
-  ld a,$FF
-+:inc a
+  ld a,c
++:dec a
   inc hl
   ld b,a;backup
   ld a,d
@@ -85,18 +83,28 @@ patCheckCore:
   ld a,b
   jp nz,-
   ld hl,str_ok
-  jp ++  
+  printm
+  exx
+  jp (hl)  
 patcheckfail:
-  ld hl,str_bad
-++:
-.endm
-
+  ld a,h
+  printByte 
+  ld a,l
+  printByte
+  ld a,'='
+  printChar
+  ld a,(hl)
+  printByte  
+  exx
+  ld a,' '
+  printChar
+  jp (hl)
   
 str_bad:
 .db "NG",0
 
 str_ok:
-.db "OK",0
+.db "OK ",0
   
   
 str_header:
@@ -109,6 +117,26 @@ str_ram:
 .db "RAM ",0
 
 
+.macro testRamPattern args pattern
+.repeat 16 index i
+  ld hl,+
+  exx
+  ld de,$C000 
+  ld hl,$400*(i+1)
+  ld c,pattern-1
+  jp patFillCore  
++:ld hl,+
+  exx
+  ld de,$C000
+  ld hl,$400*(i+1)
+  jp patCheckCore  
++:
+.endr
+  ld a,'|'
+  printChar
+.endm
+
+  
 main:
   ld sp,$FFFB  
   psg_initialize
@@ -126,15 +154,12 @@ main:
   moveCursor 2
   ld hl,str_ram
   printm
-  ld de,$C000
-  ld c,10
-  patFill16K
-  ld de,$C000
-  ld c,10
-  patCheck16K
-  printm
-  
 
+  moveCursor 3
+  testRamPattern 251
+  testRamPattern 241
+  testRamPattern 239
+  testRamPattern 233  
      
 -:jp -
   

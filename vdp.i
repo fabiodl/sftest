@@ -104,6 +104,35 @@ clearVRAMLoop:
   jp nz,-   ;10 
 .endm
 
+.macro printChar
+  ld c,PORT_VDP_DATA
+  out (c),a
+.endm
+  
+.macro printNibble
+  cp 10
+  jp m,+
+  add a,'A'-'0'-10
++:
+  add a,'0'
+  out (c),a
+.endm
+
+.macro printByte  
+  ld c,PORT_VDP_DATA
+  ld b,a ;backup
+.repeat 4
+  srl a
+.endr     
+  printNibble
+  ld a,b
+  and $0F
+  printNibble
+
+.endm
+
+
+  
 .macro resetCursor
   ld hl,(VDPCMD_VRAM_WR|$38)<<8
   safeVdpHL

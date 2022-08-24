@@ -140,7 +140,39 @@ str_ram:
 .endr
 .endm
 
+
+dump:
+  ld a,h          ;'
+  printByte
+  ld a,l
+  printByte
+  ld a,':'
+  printChar
+  exx             
+  ld b,$10         ;/'
+dumploop:
+  exx
+  ld a,(hl)       ;'
+  printByte
+  ld a,' '
+  printChar
+  inc hl
+  exx
+  djnz dumploop ;/'
+  jp (hl)
   
+  
+.macro dumpAt args addr
+  ld hl,+
+  exx
+  ld hl,addr
+  jp dump  
++:
+.endm
+
+  
+
+    
 main:
   ld sp,$FFFB  
   psg_initialize
@@ -164,6 +196,11 @@ main:
   testRamPattern 241
   testRamPattern 239
   testRamPattern 233  
+
+  dumpAt $0000
+  dumpAt $4000
+  dumpAt $8000
+  dumpAt $C000
      
 -:jp -
   

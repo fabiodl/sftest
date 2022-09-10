@@ -297,7 +297,9 @@ setPorts:
 
 
 
--:jp -
+-:ld a,$40
+  out (PORT_SFPPI_C),a
+  jp -
 
 
 
